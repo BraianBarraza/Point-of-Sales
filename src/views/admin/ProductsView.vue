@@ -8,7 +8,7 @@ import Link from '@/components/Link.vue'
     to="new-product">
     New Product
   </Link>
-  <h1>Products </h1>
+  <h1 class="text-4xl font-black my-10">Products</h1>
 </div>
 </template>
 
