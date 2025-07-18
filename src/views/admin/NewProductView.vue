@@ -1,8 +1,36 @@
 <script setup>
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import Link from '@/components/Link.vue'
 import useImage from '@/composables/useImage.js'
+import { useProductsStore } from '@/stores/products.js'
 
 const { onFileChange, url, imageUploaded } = useImage()
+const products = useProductsStore()
+const router = useRouter()
+
+const formData = reactive({
+  name: '',
+  category: '',
+  price: '',
+  availability: '',
+  image: '',
+})
+
+const submitHandler = async (data) => {
+  const { image, ...values } = data
+
+  try{
+    await products.createProduct({
+      ...values,
+      image: url.value
+    })
+    router.push({name: 'products'})
+  }catch (error) {
+    console.log(error)
+  }
+
+}
 </script>
 
 <template>
@@ -13,7 +41,7 @@ const { onFileChange, url, imageUploaded } = useImage()
 
     <div class="flex justify-center bg-white shadow rounded-lg">
       <div class="mt-10 p-10 w-full 2xl:w-2/4">
-        <FormKit type="form" submit-label="Add Product" :actions="false">
+        <FormKit type="form" submit-label="Add Product" @submit="submitHandler" :value="formData">
           <FormKit
             type="text"
             label="Name"
@@ -21,6 +49,7 @@ const { onFileChange, url, imageUploaded } = useImage()
             placeholder="Product Name"
             validation="required"
             :validation-messages="{ required: 'Field name is required' }"
+            v-model.trim="formData.name"
           />
           <FormKit
             type="file"
@@ -32,11 +61,11 @@ const { onFileChange, url, imageUploaded } = useImage()
             accept=".jpg"
             multiple="true"
             @change="onFileChange"
+            v-model.trim="formData.image"
           />
           <div v-if="imageUploaded">
             <p class="font-black">New Image Preview:</p>
-            <img class="w-32" :src="url" alt="Product new Image">
-
+            <img class="w-32" :src="url" alt="Product new Image" />
           </div>
           <FormKit
             type="select"
@@ -45,7 +74,8 @@ const { onFileChange, url, imageUploaded } = useImage()
             placeholder="Product Category"
             validation="required"
             :validation-messages="{ required: 'Field category is required' }"
-            :options="[1, 2, 3]"
+            :options="products.categoryOptions"
+            v-model.number="formData.category"
           />
           <FormKit
             type="number"
@@ -55,6 +85,7 @@ const { onFileChange, url, imageUploaded } = useImage()
             validation="required"
             :validation-messages="{ required: 'Field price is required' }"
             min="1"
+            v-model.number="formData.price"
           />
           <FormKit
             type="number"
@@ -64,8 +95,8 @@ const { onFileChange, url, imageUploaded } = useImage()
             validation="required"
             :validation-messages="{ required: 'Field Availability is required' }"
             min="0"
+            v-model.number="formData.availability"
           />
-          <FormKit type="submit" />
         </FormKit>
       </div>
     </div>
