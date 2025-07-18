@@ -1,6 +1,8 @@
 <script setup>
 import Link from '@/components/Link.vue'
-import { FormKitIcon } from '@formkit/vue'
+import useImage from '@/composables/useImage.js'
+
+const { onFileChange, url, imageUploaded } = useImage()
 </script>
 
 <template>
@@ -11,19 +13,14 @@ import { FormKitIcon } from '@formkit/vue'
 
     <div class="flex justify-center bg-white shadow rounded-lg">
       <div class="mt-10 p-10 w-full 2xl:w-2/4">
-
-        <FormKit type="form"
-                 submit-label="Add Product"
-                 :actions="false"
-        >
-
+        <FormKit type="form" submit-label="Add Product" :actions="false">
           <FormKit
             type="text"
             label="Name"
             name="name"
             placeholder="Product Name"
             validation="required"
-            :validation-messages="{required: 'Field name is required'}"
+            :validation-messages="{ required: 'Field name is required' }"
           />
           <FormKit
             type="file"
@@ -31,18 +28,24 @@ import { FormKitIcon } from '@formkit/vue'
             name="image"
             placeholder="Product image"
             validation="required"
-            :validation-messages="{required: 'Field image is required'}"
+            :validation-messages="{ required: 'Field image is required' }"
             accept=".jpg"
             multiple="true"
+            @change="onFileChange"
           />
+          <div v-if="imageUploaded">
+            <p class="font-black">New Image Preview:</p>
+            <img class="w-32" :src="url" alt="Product new Image">
+
+          </div>
           <FormKit
             type="select"
             label="Category"
             name="category"
             placeholder="Product Category"
             validation="required"
-            :validation-messages="{required: 'Field category is required'}"
-            :options="[1,2,3]"
+            :validation-messages="{ required: 'Field category is required' }"
+            :options="[1, 2, 3]"
           />
           <FormKit
             type="number"
@@ -50,7 +53,7 @@ import { FormKitIcon } from '@formkit/vue'
             name="price"
             placeholder="Product price"
             validation="required"
-            :validation-messages="{required: 'Field price is required'}"
+            :validation-messages="{ required: 'Field price is required' }"
             min="1"
           />
           <FormKit
@@ -59,13 +62,10 @@ import { FormKitIcon } from '@formkit/vue'
             name="availability"
             placeholder="Product Availability"
             validation="required"
-            :validation-messages="{required: 'Field Availability is required'}"
+            :validation-messages="{ required: 'Field Availability is required' }"
             min="0"
           />
-          <FormKit
-          type="submit"
-          />
-
+          <FormKit type="submit" />
         </FormKit>
       </div>
     </div>
