@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { defineStore } from 'pinia'
-import { useFirestore } from 'vuefire'
-import {collection, addDoc} from 'firebase/firestore'
+import { useFirestore, useCollection } from 'vuefire'
+import {collection, addDoc, where, query, limit, orderBy} from 'firebase/firestore'
 
 export const useProductsStore = defineStore('products', () => {
 
@@ -13,6 +13,12 @@ export const useProductsStore = defineStore('products', () => {
     { id: 2, name: 'Shoes' },
     { id: 3, name: 'Glasses' },
   ]
+
+  const q = query(
+    collection(db, 'products'),
+  )
+
+  const productsCollection = useCollection(q)
 
   async function createProduct(data) {
     await addDoc(collection(db, 'products'), data)
@@ -29,5 +35,6 @@ export const useProductsStore = defineStore('products', () => {
   return {
     createProduct,
     categoryOptions,
+    productsCollection,
   }
 })
