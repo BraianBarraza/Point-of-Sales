@@ -1,23 +1,29 @@
 import { computed } from 'vue'
 import { defineStore } from 'pinia'
-import { useFirestore, useCollection } from 'vuefire'
-import { collection, addDoc, where, query, limit, orderBy, updateDoc } from 'firebase/firestore'
+import { useFirestore, useCollection, useFirebaseStorage } from 'vuefire'
+import { ref as storageRef, deleteObject } from 'firebase/storage'
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  updateDoc,
+  doc,
+  getDoc,
+  deleteDoc,
+} from 'firebase/firestore'
 
 export const useProductsStore = defineStore('products', () => {
-
   const db = useFirestore()
-
+  const storage = useFirebaseStorage()
 
   const categories = [
     { id: 1, name: 'Pullovers' },
     { id: 2, name: 'Shoes' },
-    { id: 3, name: 'Glasses' }
+    { id: 3, name: 'Glasses' },
   ]
 
-  const q = query(
-    collection(db, 'products'),
-    orderBy('availability', 'asc')
-  )
+  const q = query(collection(db, 'products'), orderBy('availability', 'asc'))
 
   const productsCollection = useCollection(q)
 
@@ -30,24 +36,29 @@ export const useProductsStore = defineStore('products', () => {
 
     if (image.length) {
       await updateDoc(docRef, {
-          ...values,
-          image: url.value
-        }
-      )
+        ...values,
+        image: url.value,
+      })
     } else {
       await updateDoc(docRef, values)
     }
-
   }
 
   async function deleteProduct(id) {
+    if (confirm('Are you sure you want to permanently delete this product?')) {
+      const docRef = doc(db, 'products', id)
+      const docSnapShot = await getDoc(docRef)
+      const { image } = docSnapShot.data()
+      const imageRef = storageRef(storage, image)
 
+      await Promise.all([deleteDoc(docRef), deleteObject(imageRef)])
+    }
   }
 
   const categoryOptions = computed(() => {
     const options = [
       { label: 'Select a Category', value: '', attrs: { disabled: true } },
-      ...categories.map((category) => ({ label: category.name, value: category.id }))
+      ...categories.map((category) => ({ label: category.name, value: category.id })),
     ]
     return options
   })
@@ -59,6 +70,6 @@ export const useProductsStore = defineStore('products', () => {
     deleteProduct,
     categoryOptions,
     productsCollection,
-    noResults
+    noResults,
   }
 })

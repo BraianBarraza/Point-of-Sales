@@ -3,6 +3,7 @@ import {useProductsStore} from '@/stores/products.js'
 import { formatCurrency } from '@/helpers/index.js'
 
 const products = useProductsStore()
+
 defineProps({
   product: {
     type: Object
@@ -41,6 +42,7 @@ defineProps({
           />
         </svg>
       </RouterLink>
+
       <button
       type="button"
       @click="products.deleteProduct(product.id)"
