@@ -23,7 +23,7 @@ const formData = reactive({
   category: '',
   price: '',
   availability: '',
-  image: '',
+  image: ''
 })
 
 //Optimization to get the Data easily from db
@@ -35,7 +35,13 @@ watch(product, (product) => {
 })
 
 const submitHandler = async (data) => {
-  console.log(data)
+  try {
+    await products.updateProduct(docRef,{...data, url})
+    router.push({ name: 'products' })
+
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 </script>
@@ -96,6 +102,7 @@ const submitHandler = async (data) => {
             <p class="font-black">New Image:</p>
             <img :src="url" alt="New Product Image" class="w-52" />
           </div>
+          //TODO: the old image is not deleted
 
           <div v-else>
             <p class="font-black">Actual Product Image:</p>
