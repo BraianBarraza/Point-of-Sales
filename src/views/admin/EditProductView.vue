@@ -26,6 +26,7 @@ const formData = reactive({
   image: ''
 })
 
+//TODO: delete the old image when a new one is added
 //Optimization to get the Data easily from db
 watch(product, (product) => {
   if (!product) {
@@ -102,7 +103,6 @@ const submitHandler = async (data) => {
             <p class="font-black">New Image:</p>
             <img :src="url" alt="New Product Image" class="w-52" />
           </div>
-          //TODO: the old image is not deleted
 
           <div v-else>
             <p class="font-black">Actual Product Image:</p>

@@ -1,6 +1,8 @@
 <script setup>
 import { useCartStore } from '@/stores/cart.js'
 import ShoppingCartItem from '@/components/ShoppingCartItem.vue'
+import Amount from '@/components/Amount.vue'
+import { formatCurrency } from '../helpers/index.js'
 
 const cart = useCartStore()
 </script>
@@ -15,12 +17,27 @@ const cart = useCartStore()
         class="mt-6 divide-y divide-gray-200"
     >
       <ShoppingCartItem
-      v-for="item in cart.items"
-      :key="item.id"
-      :item="item"
+        v-for="item in cart.items"
+        :key="item.id"
+        :item="item"
       />
 
     </ul>
+
+    <dl class="space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-500">
+      <Amount>
+        <template #label>Subtotal:</template>
+        {{ formatCurrency(cart.subTotal) }}
+      </Amount>
+      <Amount>
+        <template #label>Taxes:</template>
+        {{ formatCurrency(cart.taxes) }}
+      </Amount>
+      <Amount>
+        <template #label>Total:</template>
+        {{ formatCurrency(cart.total) }}
+      </Amount>
+    </dl>
   </div>
 </template>
 
