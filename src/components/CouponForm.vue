@@ -19,12 +19,17 @@ const couponStore = useCouponStore()
 
     <button
       type="button"
-      class="p-3 bg-green-400 font-bold"
+      class="p-3 bg-green-400 font-bold disabled:opacity-35"
       @click="couponStore.applyCoupon"
+      :disabled="couponStore.isCouponValid"
     >
       Apply
     </button>
   </div>
+
+  <p class="py-2 text-center text-sm font-extrabold">
+    {{couponStore.couponValidationMessage}}
+  </p>
 </template>
 
 <style scoped>
