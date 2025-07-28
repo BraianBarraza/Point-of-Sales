@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watchEffect } from 'vue'
+import { collection, addDoc } from 'firebase/firestore'
+import { useFirestore } from 'vuefire'
 import { useCouponStore } from '@/stores/coupons.js'
+import { getCurrentDate } from '@/helpers/index.js'
 
 export const useCartStore = defineStore('cart', () => {
   const coupon = useCouponStore()
+  const db = useFirestore()
   const items = ref([])
   const subTotal = ref(0)
   const taxes = ref(0)
@@ -11,12 +15,12 @@ export const useCartStore = defineStore('cart', () => {
 
   const MAX_PRODUCTS = 8
 
-  const TAX_RATE = .19
+  const TAX_RATE = 0.19
 
   watchEffect(() => {
-    subTotal.value = items.value.reduce((total, item) => total + (item.price * item.quantity), 0)
+    subTotal.value = items.value.reduce((total, item) => total + item.price * item.quantity, 0)
     taxes.value = subTotal.value * TAX_RATE
-    total.value = (subTotal.value + taxes.value) - coupon.discount
+    total.value = subTotal.value + taxes.value - coupon.discount
   })
 
   function addItem(item) {
@@ -37,17 +41,31 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   function removeItem(id) {
-    items.value = items.value.filter(item => item.id !== id)
+    items.value = items.value.filter((item) => item.id !== id)
   }
 
   async function checkout() {
-    console.log('Checking cart')
+    try {
+      await addDoc(collection(db, 'sales'), {
+        items: items.value,
+        subTotal: subTotal.value,
+        taxes: taxes.value,
+        discount: coupon.discount,
+        total: total.value,
+        date: getCurrentDate(),
+      })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const isItemInCart = id => items.value.findIndex(item => item.id === id)
+  const isItemInCart = (id) => items.value.findIndex((item) => item.id === id)
 
   const isProductAvailable = (item, index) => {
-    return items.value[index].quantity >= item.availability || items.value[index].quantity >= MAX_PRODUCTS
+    return (
+      items.value[index].quantity >= item.availability ||
+      items.value[index].quantity >= MAX_PRODUCTS
+    )
   }
 
   const isEmpty = computed(() => items.value.length === 0)
@@ -65,6 +83,6 @@ export const useCartStore = defineStore('cart', () => {
     total,
     isEmpty,
     items,
-    checkProductAvailability
+    checkProductAvailability,
   }
 })

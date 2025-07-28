@@ -51,7 +51,7 @@ const couponStore = useCouponStore()
     <button
     type="button"
     class="mt-10 w-full bg-indigo-600 hover:bg-indigo-700 text-white uppercase font-bold p-3"
-    @click="cart.checkout()"
+    @click="cart.checkout"
     >
       Confirm Buy
     </button>
