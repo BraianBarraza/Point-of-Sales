@@ -1,18 +1,24 @@
 <script setup>
-import {useProductsStore} from '@/stores/products.js'
+import { computed } from 'vue'
+import { useProductsStore } from '@/stores/products.js'
 import { formatCurrency } from '@/helpers/index.js'
 
 const products = useProductsStore()
 
-defineProps({
+const props = defineProps({
   product: {
     type: Object
   }
 })
+
+const notAvailableProduct = computed(() => props.product.availability === 0)
+
 </script>
 
 <template>
-  <li class="flex items-center space-x-6 border border-gray-200 p-6 bg-white shadow">
+  <li
+    :class="{'opacity-30': notAvailableProduct}"
+    class="flex items-center space-x-6 border border-gray-200 p-6 bg-white shadow">
     <img :src="product.image" :alt="product.name" class="h-24 w-24" />
     <div class="space-y-2 flex-auto">
       <h3 class="text-gray-900">{{ product.name }}</h3>
@@ -44,8 +50,8 @@ defineProps({
       </RouterLink>
 
       <button
-      type="button"
-      @click="products.deleteProduct(product.id)"
+        type="button"
+        @click="products.deleteProduct(product.id)"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
              stroke="currentColor" class="size-6 text-red-500">

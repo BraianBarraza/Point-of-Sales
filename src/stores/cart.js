@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watchEffect } from 'vue'
-import { collection, addDoc } from 'firebase/firestore'
+import { collection, addDoc, runTransaction, doc } from 'firebase/firestore'
 import { useFirestore } from 'vuefire'
 import { useCouponStore } from '@/stores/coupons.js'
 import { getCurrentDate } from '@/helpers/index.js'
@@ -19,8 +19,8 @@ export const useCartStore = defineStore('cart', () => {
 
   watchEffect(() => {
     subTotal.value = items.value.reduce((total, item) => total + item.price * item.quantity, 0)
-    taxes.value = subTotal.value * TAX_RATE
-    total.value = subTotal.value + taxes.value - coupon.discount
+    taxes.value = Number((subTotal.value * TAX_RATE).toFixed(2))
+    total.value = Number((subTotal.value + taxes.value - coupon.discount).toFixed(2))
   })
 
   function addItem(item) {
@@ -47,16 +47,41 @@ export const useCartStore = defineStore('cart', () => {
   async function checkout() {
     try {
       await addDoc(collection(db, 'sales'), {
-        items: items.value,
+        items: items.value.map(item => {
+          const { availability, category, ...data } = item
+          return data
+        }),
         subTotal: subTotal.value,
         taxes: taxes.value,
         discount: coupon.discount,
         total: total.value,
-        date: getCurrentDate(),
+        date: getCurrentDate()
       })
+
+      //Availability subtraction
+      items.value.forEach(async (item) => {
+        const productRef = doc(db, 'products', item.id)
+        await runTransaction(db, async (transaction) => {
+          const currentProduct = await transaction.get(productRef)
+          const availability = currentProduct.data().availability - item.quantity
+          transaction.update(productRef, { availability })
+        })
+      })
+
+      //State Reset
+      $reset()
+      coupon.$reset()
+
     } catch (error) {
       console.error(error)
     }
+  }
+
+  function $reset() {
+    items.value = []
+    subTotal.value = 0
+    taxes.value = 0
+    total.value = 0
   }
 
   const isItemInCart = (id) => items.value.findIndex((item) => item.id === id)
@@ -83,6 +108,6 @@ export const useCartStore = defineStore('cart', () => {
     total,
     isEmpty,
     items,
-    checkProductAvailability,
+    checkProductAvailability
   }
 })

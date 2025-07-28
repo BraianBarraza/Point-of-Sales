@@ -32,10 +32,19 @@ export const useCouponStore = defineStore('coupon', () => {
     }, 5000)
   }
 
+
+  function $reset(){
+    couponInput.value = ''
+    couponValidationMessage.value = ''
+    discountPercentage.value = 0
+    discount.value = 0
+  }
+
   const isCouponValid = computed(() => discountPercentage.value > 0)
 
   return {
     applyCoupon,
+    $reset,
     couponInput,
     couponValidationMessage,
     discount,
